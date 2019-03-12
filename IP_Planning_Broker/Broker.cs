@@ -58,7 +58,7 @@ namespace IP_Planning_Broker
                 Console.WriteLine("Received message: {0}", message);
             };
 
-            channel.BasicConsume(queue: "Planning",
+            channel.BasicConsume(queue: queueName,
                                  autoAck: true,
                                  consumer: consumer);
         }
