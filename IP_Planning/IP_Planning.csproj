@@ -5,4 +5,8 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\IP_Planning_Broker\IP_Planning_Broker.csproj" />
+  </ItemGroup>
+
 </Project>

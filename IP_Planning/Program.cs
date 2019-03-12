@@ -1,4 +1,5 @@
 ﻿using System;
+using IP_Planning_Broker;
 
 namespace IP_Planning
 {
@@ -6,7 +7,17 @@ namespace IP_Planning
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Broker broker = new Broker("amqPlanning","amqPlanning","10.3.56.10","Planning");
+
+            broker.StartConsumer();
+
+            string message;
+
+            while (true)
+            {
+                message =  Console.ReadLine();
+                broker.SendMessage(message);
+            }
         }
     }
 }
