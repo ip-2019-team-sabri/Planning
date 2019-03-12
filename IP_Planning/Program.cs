@@ -17,7 +17,7 @@ namespace IP_Planning
 
             string message;
 
-            //Remove this code
+            //Remove this code after testing
             Console.WriteLine("Welcome to hello server. This is only for testing purposes.");
 
             while (true)
