@@ -7,7 +7,8 @@ namespace IP_Planning_Broker
 {
     //Has 2 methods:
     //SendMessage(string) for sending a message. (might take xml argument later on)
-    //StartConsumer(). This starts the broker for consuming messages. Make sure you do not change the channel variable afterwards, as it will top consuming.
+    //StartConsumer(). This starts enables broker to consume messages. 
+    //Make sure you do not change the channel variable afterwards, as it will top consuming.
 
     //You can simply copy this class and add it to you code. It should work on the fly, using your own credentials.
 
