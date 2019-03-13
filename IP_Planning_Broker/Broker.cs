@@ -2,13 +2,19 @@
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 using System;
+using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IP_Planning_Broker
 {
     public class Broker
     {
         public bool connected;
+
+        Thread t;
+        List<string> messageQueue;
 
         private IConnection connection;
         private IModel consumerChannel;
@@ -21,12 +27,17 @@ namespace IP_Planning_Broker
 
         public Broker(string userName, string password, string hostName, string queueName)
         {
-            this.connected = false;
+            connected = false;
 
             this.userName = userName;
             this.password = password;
             this.hostName = hostName;
             this.queueName = queueName;
+
+            t = new Thread(new ThreadStart(heartbeat));
+            t.Start();
+
+            messageQueue = new List<string>();
         }
 
         public void OpenConnection()
@@ -70,6 +81,11 @@ namespace IP_Planning_Broker
                 Console.WriteLine("ERROR: Failed to open connection. " + e.Message);
                 CloseConnection();
             }
+
+            //foreach(var msg in messageBuffer)
+            //{
+
+            //}
         }
 
         public void CloseConnection()
@@ -97,7 +113,35 @@ namespace IP_Planning_Broker
             connected = false;
         }
 
-        public void SendMessage(string msg)
+        public void QueueMessage(string msg)
+        {
+            messageQueue.Add(msg);
+        }
+
+        private void heartbeat()
+        {
+            while (true)
+            {
+                SendMessages();
+                Thread.Sleep(1000);
+            }
+        }
+
+        private void SendMessages()
+        {
+            bool issent = true;
+
+            while(messageQueue.Count > 0 && issent)
+            {
+                issent = SendMessage(messageQueue[0]);
+                if(issent)
+                {
+                    messageQueue.RemoveAt(0);
+                }
+            }
+        }
+
+        private bool SendMessage(string msg)
         {
             try
             {
@@ -112,16 +156,73 @@ namespace IP_Planning_Broker
                                          routingKey: "",
                                          basicProperties: properties,
                                          body: body);
+                    return true;
                 }
                 else
                 {
                     Console.WriteLine("ERROR: Trying to publish message while channel is not initialized.");
+                    return false;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine("ERROR: Failed to send message. " + e.Message);
+                return false;
             }
         }
+
+        //private async Task BufferMessage(string msg)
+        //{
+        //    bufferCount++;
+
+        //    bool isSent = false;
+        //    Console.WriteLine("Buffering new message. Currently there are " + bufferCount + " messages buffered.");
+
+        //    while (!isSent)
+        //    {
+        //        if (publisherChannel != null)
+        //        {
+        //            var body = Encoding.UTF8.GetBytes(msg);
+
+        //            var properties = publisherChannel.CreateBasicProperties();
+        //            properties.Persistent = true;
+
+        //            publisherChannel.BasicPublish(exchange: "amq.fanout",
+        //                                 routingKey: "",
+        //                                 basicProperties: properties,
+        //                                 body: body);
+        //        }
+        //    }
+        //    Console.WriteLine("Buffered message sent.");
+        //}
+
+        //public async Task SendMessage(string msg)
+        //{
+        //    try
+        //    {
+        //        if (publisherChannel != null)
+        //        {
+        //            var body = Encoding.UTF8.GetBytes(msg);
+
+        //            var properties = publisherChannel.CreateBasicProperties();
+        //            properties.Persistent = true;
+
+        //            publisherChannel.BasicPublish(exchange: "amq.fanout",
+        //                                 routingKey: "",
+        //                                 basicProperties: properties,
+        //                                 body: body);
+        //        }
+        //        else
+        //        {
+        //            Console.WriteLine("ERROR: Trying to publish message while channel is not initialized.");
+        //            BufferMessage(msg);
+        //        }
+        //    }
+        //    catch(Exception e)
+        //    {
+        //        Console.WriteLine("ERROR: Failed to send message. " + e.Message);
+        //        BufferMessage(msg);
+        //    }
+        //}
     }
 }
