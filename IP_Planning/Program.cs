@@ -11,7 +11,7 @@ namespace IP_Planning
             //Change this to your credentials.
             //Check https://docs.google.com/document/d/1juDXoeJSQxVjRHMO8k0yPMVFv3-7bJfH0QSp0yeEedQ/edit?usp=sharing
 
-            Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Planning");
+            Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Planning", 1000, 10000);
 
             while (!broker.connected)
             {
@@ -35,7 +35,7 @@ namespace IP_Planning
             Console.WriteLine("\nWelcome to hello server. This is only for testing purposes.");
 
             int counter = 1;
-            int maxcount = 100;
+            int maxcount = 10000;
             bool sending = true;
 
             while (sending)

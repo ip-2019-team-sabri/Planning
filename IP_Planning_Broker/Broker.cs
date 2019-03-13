@@ -13,10 +13,14 @@ namespace IP_Planning_Broker
     {
         public bool connected;
 
+
         private Timer aTimer;
         private AutoResetEvent autoEvent;
+        private int publishInterval;
+        private int idleInterval;
 
         List<string> messageQueue;
+        private bool queueInUse;
 
         private IConnection connection;
         private IModel consumerChannel;
@@ -27,7 +31,7 @@ namespace IP_Planning_Broker
         private string hostName;
         private string queueName;
 
-        public Broker(string userName, string password, string hostName, string queueName)
+        public Broker(string userName, string password, string hostName, string queueName, int publishInterval, int idleInterval)
         {
             connected = false;
 
@@ -36,7 +40,11 @@ namespace IP_Planning_Broker
             this.hostName = hostName;
             this.queueName = queueName;
 
+            this.publishInterval = publishInterval;
+            this.idleInterval = idleInterval;
+
             messageQueue = new List<string>();
+            queueInUse = false;
         }
 
         public void OpenConnection()
@@ -71,11 +79,6 @@ namespace IP_Planning_Broker
                                      consumer: consumer);
 
                 Console.WriteLine("INFO: Success!");
-                Console.WriteLine("INFO: Starting publish timer...");
-
-                autoEvent = new AutoResetEvent(false);
-                aTimer = new Timer(PublishQueue, autoEvent, 1000,250);
-
             }
             catch (BrokerUnreachableException e)
             {
@@ -116,29 +119,54 @@ namespace IP_Planning_Broker
 
         public void QueueMessage(string msg)
         {
-            messageQueue.Add(msg);
+            if (!queueInUse)
+            {
+                bool isSent = PublishMessage(msg);
+
+                if (!isSent)
+                {
+                    messageQueue.Add(msg);
+                    Console.WriteLine("INFO: Starting fallback queue timer...");
+
+                    autoEvent = new AutoResetEvent(false);
+                    aTimer = new Timer(PublishQueue, autoEvent, 0, idleInterval);
+
+                    queueInUse = true;
+                }
+            }
+            else
+            {
+                messageQueue.Add(msg);
+            }
         }
 
         private void PublishQueue(Object stateInfo)
         {
-            Console.WriteLine("INFO: Trying to publish queued messages.");
             bool issent = true;
 
             while(messageQueue.Count > 0 && issent)
             {
-                issent = SendMessage(messageQueue[0]);
+                issent = PublishMessage(messageQueue[0]);
                 if(issent)
                 {
                     messageQueue.RemoveAt(0);
                 }
                 else
                 {
-                    Console.WriteLine("ERROR: Failed to publish queue.");
+                    Console.WriteLine("ERROR: Failed to publish queued messages. Pausing timer for " + idleInterval/1000 + "s.");
+                    aTimer.Change(idleInterval, idleInterval);
                 }
+            }
+            if (issent)
+            {
+                queueInUse = false;
+                aTimer.Dispose();
+                autoEvent.Dispose();
+                GC.Collect();
             }
         }
 
-        private bool SendMessage(string msg)
+        private bool PublishMessage(string msg)
         {
             try
             {
