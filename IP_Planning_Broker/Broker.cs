@@ -13,7 +13,9 @@ namespace IP_Planning_Broker
     {
         public bool connected;
 
-        Thread t;
+        private Timer aTimer;
+        private AutoResetEvent autoEvent;
+
         List<string> messageQueue;
 
         private IConnection connection;
@@ -33,9 +35,6 @@ namespace IP_Planning_Broker
             this.password = password;
             this.hostName = hostName;
             this.queueName = queueName;
-
-            t = new Thread(new ThreadStart(heartbeat));
-            t.Start();
 
             messageQueue = new List<string>();
         }
@@ -70,6 +69,13 @@ namespace IP_Planning_Broker
                 consumerChannel.BasicConsume(queue: queueName,
                                      autoAck: true,
                                      consumer: consumer);
+
+                Console.WriteLine("INFO: Success!");
+                Console.WriteLine("INFO: Starting publish timer...");
+
+                autoEvent = new AutoResetEvent(false);
+                aTimer = new Timer(PublishQueue, autoEvent, 1000,250);
+
             }
             catch (BrokerUnreachableException e)
             {
@@ -81,11 +87,6 @@ namespace IP_Planning_Broker
                 Console.WriteLine("ERROR: Failed to open connection. " + e.Message);
                 CloseConnection();
             }
-
-            //foreach(var msg in messageBuffer)
-            //{
-
-            //}
         }
 
         public void CloseConnection()
@@ -118,17 +119,9 @@ namespace IP_Planning_Broker
             messageQueue.Add(msg);
         }
 
-        private void heartbeat()
+        private void PublishQueue(Object stateInfo)
         {
-            while (true)
-            {
-                SendMessages();
-                Thread.Sleep(1000);
-            }
-        }
-
-        private void SendMessages()
-        {
+            Console.WriteLine("INFO: Trying to publish queued messages.");
             bool issent = true;
 
             while(messageQueue.Count > 0 && issent)
@@ -137,6 +130,10 @@ namespace IP_Planning_Broker
                 if(issent)
                 {
                     messageQueue.RemoveAt(0);
+                }
+                else
+                {
+                    Console.WriteLine("ERROR: Failed to publish queue.");
                 }
             }
         }
@@ -170,59 +167,5 @@ namespace IP_Planning_Broker
                 return false;
             }
         }
-
-        //private async Task BufferMessage(string msg)
-        //{
-        //    bufferCount++;
-
-        //    bool isSent = false;
-        //    Console.WriteLine("Buffering new message. Currently there are " + bufferCount + " messages buffered.");
-
-        //    while (!isSent)
-        //    {
-        //        if (publisherChannel != null)
-        //        {
-        //            var body = Encoding.UTF8.GetBytes(msg);
-
-        //            var properties = publisherChannel.CreateBasicProperties();
-        //            properties.Persistent = true;
-
-        //            publisherChannel.BasicPublish(exchange: "amq.fanout",
-        //                                 routingKey: "",
-        //                                 basicProperties: properties,
-        //                                 body: body);
-        //        }
-        //    }
-        //    Console.WriteLine("Buffered message sent.");
-        //}
-
-        //public async Task SendMessage(string msg)
-        //{
-        //    try
-        //    {
-        //        if (publisherChannel != null)
-        //        {
-        //            var body = Encoding.UTF8.GetBytes(msg);
-
-        //            var properties = publisherChannel.CreateBasicProperties();
-        //            properties.Persistent = true;
-
-        //            publisherChannel.BasicPublish(exchange: "amq.fanout",
-        //                                 routingKey: "",
-        //                                 basicProperties: properties,
-        //                                 body: body);
-        //        }
-        //        else
-        //        {
-        //            Console.WriteLine("ERROR: Trying to publish message while channel is not initialized.");
-        //            BufferMessage(msg);
-        //        }
-        //    }
-        //    catch(Exception e)
-        //    {
-        //        Console.WriteLine("ERROR: Failed to send message. " + e.Message);
-        //        BufferMessage(msg);
-        //    }
-        //}
     }
 }
