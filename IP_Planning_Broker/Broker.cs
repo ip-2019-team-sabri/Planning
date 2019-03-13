@@ -8,6 +8,8 @@ namespace IP_Planning_Broker
 {
     public class Broker
     {
+        public bool connected;
+
         private IConnection connection;
         private IModel consumerChannel;
         private IModel publisherChannel;
@@ -19,11 +21,16 @@ namespace IP_Planning_Broker
 
         public Broker(string userName, string password, string hostName, string queueName)
         {
+            this.connected = false;
+
             this.userName = userName;
             this.password = password;
             this.hostName = hostName;
             this.queueName = queueName;
+        }
 
+        public void OpenConnection()
+        {
             ConnectionFactory factory = new ConnectionFactory()
             {
                 UserName = userName,
@@ -31,47 +38,63 @@ namespace IP_Planning_Broker
                 HostName = hostName
             };
 
+            Console.WriteLine("INFO: Connecting to RabbitMQ server...");
+
             try
             {
+                connected = true;
+
                 connection = factory.CreateConnection();
                 consumerChannel = connection.CreateModel();
                 publisherChannel = connection.CreateModel();
+
+                var consumer = new EventingBasicConsumer(consumerChannel);
+                consumer.Received += (model, ea) =>
+                {
+                    var body = ea.Body;
+                    var message = Encoding.UTF8.GetString(body);
+                    Console.WriteLine("Received message: {0}", message);
+                };
+
+                consumerChannel.BasicConsume(queue: queueName,
+                                     autoAck: true,
+                                     consumer: consumer);
             }
             catch (BrokerUnreachableException e)
             {
-                Console.WriteLine("ERROR: Failed to initialize broker. " + e.Message + ".");
+                Console.WriteLine("ERROR: Failed to open connection. " + e.Message + ".");
+                CloseConnection();
+            }
+            catch (OperationInterruptedException e)
+            {
+                Console.WriteLine("ERROR: Failed to open connection. " + e.Message);
                 CloseConnection();
             }
         }
 
-        public void StartConsumer()
+        public void CloseConnection()
         {
-            try
+            if (consumerChannel != null)
             {
-                if (consumerChannel != null)
-                {
-                    var consumer = new EventingBasicConsumer(consumerChannel);
-                    consumer.Received += (model, ea) =>
-                    {
-                        var body = ea.Body;
-                        var message = Encoding.UTF8.GetString(body);
-                        Console.WriteLine("Received message: {0}", message);
-                    };
+                consumerChannel.Close();
+                consumerChannel.Dispose();
+                consumerChannel = null;
+            }
 
-                    consumerChannel.BasicConsume(queue: queueName,
-                                         autoAck: true,
-                                         consumer: consumer);
-                }
-                else
-                {
-                    Console.WriteLine("ERROR: Failed to start consumer. Trying to activate consumer while channel is not initialized.");
-                }
-            }
-            catch(OperationInterruptedException e)
+            if (publisherChannel != null)
             {
-                Console.WriteLine("ERROR: Failed to start consumer. " + e.Message);
-                CloseConnection();
+                publisherChannel.Close();
+                publisherChannel.Dispose();
+                publisherChannel = null;
             }
+
+            if (connection != null)
+            {
+                connection.Close();
+                connection.Dispose();
+                connection = null;
+            }
+            connected = false;
         }
 
         public void SendMessage(string msg)
@@ -98,20 +121,7 @@ namespace IP_Planning_Broker
             catch(Exception e)
             {
                 Console.WriteLine("ERROR: Failed to send message. " + e.Message);
-                CloseConnection();
             }
-        }
-
-        public void CloseConnection()
-        {
-            if (consumerChannel != null)
-                consumerChannel.Dispose();
-
-            if (publisherChannel != null)
-                publisherChannel.Dispose();
-
-            if (connection != null)
-                connection.Dispose();
         }
     }
 }

@@ -11,24 +11,35 @@ namespace IP_Planning
             //Change this to your credentials.
             //Check https://docs.google.com/document/d/1juDXoeJSQxVjRHMO8k0yPMVFv3-7bJfH0QSp0yeEedQ/edit?usp=sharing
 
-            Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Planning");
+            Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Plannting");
 
-            broker.StartConsumer();
+            while (!broker.connected)
+            {
+                broker.OpenConnection();
 
+                if (!broker.connected)
+                {
+                    Console.Write("INFO: Retrying in 10s.");
+                    Thread.Sleep(3333);
+                    Console.Write(".");
+                    Thread.Sleep(3333);
+                    Console.Write(".");
+                    Thread.Sleep(3333);
+                    Console.Write("\n");
+                }
+            }
 
             string message;
 
             //Remove this code after testing
-            Console.WriteLine("Welcome to hello server. This is only for testing purposes.");
+            Console.WriteLine("\nWelcome to hello server. This is only for testing purposes.");
 
-            while (true)
-            {
-                Console.WriteLine("Enter a message:");
-                message = Console.ReadLine();
-                broker.SendMessage(message);
+            Console.WriteLine("Enter a message:");
+            message = Console.ReadLine();
+            broker.SendMessage(message);
 
-                Thread.Sleep(250);
-            }
+            Thread.Sleep(250);
+
             broker.CloseConnection();
 
             Console.WriteLine("Press enter to quit.");
