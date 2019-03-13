@@ -21,12 +21,14 @@ namespace IP_Planning
             //Remove this code after testing
             Console.WriteLine("Welcome to hello server. This is only for testing purposes.");
 
+            while (true)
+            {
                 Console.WriteLine("Enter a message:");
                 message = Console.ReadLine();
                 broker.SendMessage(message);
 
                 Thread.Sleep(250);
-
+            }
             broker.CloseConnection();
 
             Console.WriteLine("Press enter to quit.");

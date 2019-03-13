@@ -6,13 +6,6 @@ using System.Text;
 
 namespace IP_Planning_Broker
 {
-    //Has 2 methods:
-    //SendMessage(string) for sending a message. (might take xml argument later on)
-    //StartConsumer(). This starts enables broker to consume messages. 
-    //Make sure you do not change the channel variable afterwards, as it will stop consuming.
-
-    //You can simply copy this class and add it to you code. It should work on the fly, using your own credentials.
-
     public class Broker
     {
         private IConnection connection;
@@ -47,19 +40,8 @@ namespace IP_Planning_Broker
             catch (BrokerUnreachableException e)
             {
                 Console.WriteLine("ERROR: Failed to initialize broker. " + e.Message + ".");
+                CloseConnection();
             }
-        }
-
-        public void CloseConnection()
-        {
-            if (consumerChannel != null)
-                consumerChannel.Dispose();
-
-            if (publisherChannel != null)
-                publisherChannel.Dispose();
-
-            if (connection != null)
-                connection.Dispose();
         }
 
         public void StartConsumer()
@@ -88,6 +70,7 @@ namespace IP_Planning_Broker
             catch(OperationInterruptedException e)
             {
                 Console.WriteLine("ERROR: Failed to start consumer. " + e.Message);
+                CloseConnection();
             }
         }
 
@@ -115,7 +98,20 @@ namespace IP_Planning_Broker
             catch(Exception e)
             {
                 Console.WriteLine("ERROR: Failed to send message. " + e.Message);
+                CloseConnection();
             }
+        }
+
+        public void CloseConnection()
+        {
+            if (consumerChannel != null)
+                consumerChannel.Dispose();
+
+            if (publisherChannel != null)
+                publisherChannel.Dispose();
+
+            if (connection != null)
+                connection.Dispose();
         }
     }
 }
