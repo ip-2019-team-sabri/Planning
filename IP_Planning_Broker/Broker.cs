@@ -1,5 +1,6 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 using System;
 using System.Text;
 
@@ -15,12 +16,21 @@ namespace IP_Planning_Broker
     public class Broker
     {
         private IConnection connection;
-        private IModel channel;
+        private IModel consumerChannel;
+        private IModel publisherChannel;
 
+        private string userName;
+        private string password;
+        private string hostName;
         private string queueName;
 
         public Broker(string userName, string password, string hostName, string queueName)
         {
+            this.userName = userName;
+            this.password = password;
+            this.hostName = hostName;
+            this.queueName = queueName;
+
             ConnectionFactory factory = new ConnectionFactory()
             {
                 UserName = userName,
@@ -28,40 +38,84 @@ namespace IP_Planning_Broker
                 HostName = hostName
             };
 
-            connection = factory.CreateConnection();
-            channel = connection.CreateModel();
-            this.queueName = queueName;
+            try
+            {
+                connection = factory.CreateConnection();
+                consumerChannel = connection.CreateModel();
+                publisherChannel = connection.CreateModel();
+            }
+            catch (BrokerUnreachableException e)
+            {
+                Console.WriteLine("ERROR: Failed to initialize broker. " + e.Message + ".");
+            }
         }
 
-        public void SendMessage(string msg)
+        public void CloseConnection()
         {
-            //Body maken (in productie is dees uwen XML)
-            var body = Encoding.UTF8.GetBytes(msg);
+            if (consumerChannel != null)
+                consumerChannel.Dispose();
 
-            //Properties opstellen (gewoon zo laten en youll be fine)
-            var properties = channel.CreateBasicProperties();
-            properties.Persistent = true;
+            if (publisherChannel != null)
+                publisherChannel.Dispose();
 
-            //Verzenden naar de default fanout exchange
-            channel.BasicPublish(exchange: "amq.fanout",
-                                 routingKey: "",
-                                 basicProperties: properties,
-                                 body: body);
+            if (connection != null)
+                connection.Dispose();
         }
 
         public void StartConsumer()
         {
-            var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += (model, ea) =>
+            try
             {
-                var body = ea.Body;
-                var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine("Received message: {0}", message);
-            };
+                if (consumerChannel != null)
+                {
+                    var consumer = new EventingBasicConsumer(consumerChannel);
+                    consumer.Received += (model, ea) =>
+                    {
+                        var body = ea.Body;
+                        var message = Encoding.UTF8.GetString(body);
+                        Console.WriteLine("Received message: {0}", message);
+                    };
 
-            channel.BasicConsume(queue: queueName,
-                                 autoAck: true,
-                                 consumer: consumer);
+                    consumerChannel.BasicConsume(queue: queueName,
+                                         autoAck: true,
+                                         consumer: consumer);
+                }
+                else
+                {
+                    Console.WriteLine("ERROR: Failed to start consumer. Trying to activate consumer while channel is not initialized.");
+                }
+            }
+            catch(OperationInterruptedException e)
+            {
+                Console.WriteLine("ERROR: Failed to start consumer. " + e.Message);
+            }
+        }
+
+        public void SendMessage(string msg)
+        {
+            try
+            {
+                if (publisherChannel != null)
+                {
+                    var body = Encoding.UTF8.GetBytes(msg);
+
+                    var properties = publisherChannel.CreateBasicProperties();
+                    properties.Persistent = true;
+
+                    publisherChannel.BasicPublish(exchange: "amq.fanout",
+                                         routingKey: "",
+                                         basicProperties: properties,
+                                         body: body);
+                }
+                else
+                {
+                    Console.WriteLine("ERROR: Trying to publish message while channel is not initialized.");
+                }
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("ERROR: Failed to send message. " + e.Message);
+            }
         }
     }
 }
