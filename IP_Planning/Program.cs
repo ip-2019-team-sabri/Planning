@@ -11,13 +11,13 @@ namespace IP_Planning
             //Change this to your credentials.
             //Check https://docs.google.com/document/d/1juDXoeJSQxVjRHMO8k0yPMVFv3-7bJfH0QSp0yeEedQ/edit?usp=sharing
 
-            Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Planning", 1000, 10000);
+            Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Planning", 10000);
 
-            while (!broker.connected)
+            while (!broker.IsConnected())
             {
                 broker.OpenConnection();
 
-                if (!broker.connected)
+                if (!broker.IsConnected())
                 {
                     Console.Write("INFO: Retrying in 10s.");
                     Thread.Sleep(3333);
@@ -35,16 +35,15 @@ namespace IP_Planning
             Console.WriteLine("\nWelcome to hello server. This is only for testing purposes.");
 
             int counter = 1;
-            int maxcount = 10000;
+            int maxcount = 1000;
             bool sending = true;
 
             while (sending)
             {
-                Console.WriteLine("Enter a message:");
-                message = "Message nr: " + counter;
+                message = "Message nr " + counter;
                 broker.QueueMessage(message);
                 counter++;
-                Thread.Sleep(500);
+                Thread.Sleep(3000);
                 if (counter > maxcount)
                     sending = false;
             }
