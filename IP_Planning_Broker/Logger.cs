@@ -9,20 +9,23 @@ namespace IP_Planning_Broker
 
         public void Log(string message, string severity)
         {
+            DateTime time = DateTime.Now;
+            string stime = time.ToString("hh:mm:ss.ff");
+
             if(severity == "info")
             {
                 Console.ForegroundColor = ConsoleColor.Gray;
-                Console.WriteLine("INFO: " + message);
+                Console.WriteLine("[" + stime + "] INFO: " + message);
             }
             else if(severity == "warning")
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("WARNING: " + message);
+                Console.WriteLine("[" + stime + "] WARNING: " + message);
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("ERROR: " + message);
+                Console.WriteLine("[" + stime + "] ERROR: " + message);
             }
             Console.ForegroundColor = ConsoleColor.White;
         }

@@ -41,9 +41,9 @@ namespace IP_Planning
             while (sending)
             {
                 message = "Message nr " + counter;
-                broker.QueueMessage(message);
+                broker.NewMessage(message);
                 counter++;
-                Thread.Sleep(3000);
+                Thread.Sleep(100);
                 if (counter > maxcount)
                     sending = false;
             }

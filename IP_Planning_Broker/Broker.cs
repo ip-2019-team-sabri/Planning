@@ -10,6 +10,8 @@ namespace IP_Planning_Broker
 {
     public class Broker
     {
+        bool threadFrozen;
+
         private IConnection connection;
         private IModel consumerChannel;
         private IModel publisherChannel;
@@ -19,31 +21,30 @@ namespace IP_Planning_Broker
         private string hostName;
         private string queueName;
 
-        private int retryInterval;
-        private Timer retryTimer;
-        private AutoResetEvent autoEvent;
-
-        List<string> fallbackQueue;
-
+        List<string> fbQueue;
+        private Timer fbRetryTimer;
+        private AutoResetEvent fbAutoEvent;
+        private int fbRetryInterval;
+        
         Logger logger;
 
         public Broker(string userName, string password, string hostName, string queueName, int publishInterval)
         {
+            threadFrozen = false;
+
             this.userName = userName;
             this.password = password;
             this.hostName = hostName;
             this.queueName = queueName;
 
-            this.retryInterval = publishInterval;
-
-            fallbackQueue = null;
-            retryTimer = null;
-            autoEvent = null;
+            fbQueue = null;
+            fbRetryTimer = null;
+            fbAutoEvent = null;
+            fbRetryInterval = publishInterval;
 
             logger = new Logger();
         }
 
-        //Returns true if the broker is connected to the rabbitmq server.
         public bool IsConnected()
         {
             if (connection != null)
@@ -53,13 +54,9 @@ namespace IP_Planning_Broker
             return false;
         }
 
-        //Connects to the rabbitmq server using the given credentials.
-        //Use GetConnectionStatus to check if the connection succeeded.
-        //You should make sure to repeat this method after a given interval when connection fails.
-        //Once connected the connection will automatically reconnect when there is a temporary outage.
         public void OpenConnection()
         {
-            if (!IsConnected())
+            if (connection == null)
             {
                 ConnectionFactory factory = new ConnectionFactory()
                 {
@@ -68,10 +65,10 @@ namespace IP_Planning_Broker
                     HostName = hostName
                 };
 
-                logger.Log("Connecting to RabbitMQ server...", "info");
-
                 try
                 {
+                    logger.Log("Connecting to RabbitMQ server...", "info");
+
                     connection = factory.CreateConnection();
                     consumerChannel = connection.CreateModel();
                     publisherChannel = connection.CreateModel();
@@ -81,7 +78,7 @@ namespace IP_Planning_Broker
                     {
                         var body = ea.Body;
                         var message = Encoding.UTF8.GetString(body);
-                        logger.Log("Received message: "+ message, "info");
+                        logger.Log("Received message: " + message, "info");
                     };
 
                     consumerChannel.BasicConsume(queue: queueName,
@@ -92,22 +89,20 @@ namespace IP_Planning_Broker
                 }
                 catch (BrokerUnreachableException e)
                 {
-                    logger.Log("Failed to open connection. " + e.GetType(), "error");
+                    logger.Log("Failed to connect to RabbitMQ server. " + e.GetType(), "error");
                     CloseConnection();
                 }
                 catch (OperationInterruptedException e)
                 {
-                    logger.Log("Failed to open connection. " + e.GetType(), "error");
+                    logger.Log("Failed to connect to RabbitMQ server. " + e.GetType(), "error");
                     CloseConnection();
                 }
             }
         }
 
-        //Carefully closes all channes and connections.
-        //This is mandatory to avoid memory leaks.
         public void CloseConnection()
         {
-            logger.Log("Closing connection.", "info");
+            logger.Log("Closing connection...", "info");
             if (consumerChannel != null)
             {
                 consumerChannel.Close();
@@ -130,38 +125,21 @@ namespace IP_Planning_Broker
             }
         }
 
-        //Tries to send the given  message to the rabbitmq server.
-        //If the broker fails to send te message, it will locally queue the message in the fallback queue.
-        public void QueueMessage(string msg)
+        public void NewMessage(string msg)
         {
-            logger.Log("Queueing message.", "info");
-            if (fallbackQueue == null)
+            if (fbQueue == null)
             {
                 if (!PublishMessage(msg))
                 {
-                    logger.Log("Switching to fallback queue.", "warning");
-                    EnableFallbackQueue();
-                    fallbackQueue.Add(msg);
-                    logger.Log("Message added to fallback queue.", "info");
+                    QueueMessage(msg);
                 }
             }
             else
             {
-                fallbackQueue.Add(msg);
-                logger.Log("Message added to fallback queue.", "info");
-
-                if (IsConnected())
-                {
-                    retryTimer.Change(0, -1);
-                    logger.Log("Freezing main thread.", "warning");
-                    autoEvent.WaitOne();
-                    logger.Log("Switching back to live publishing.", "warning");
-                }
+                QueueMessage(msg);
             }
         }
 
-
-        //Do not use the private methods
         private bool PublishMessage(string msg)
         {
             try
@@ -182,7 +160,7 @@ namespace IP_Planning_Broker
                 }
                 else
                 {
-                   logger.Log("Trying to publish message while channel is not initialized.", "error");
+                    logger.Log("Trying to publish message while channel is not initialized.", "error");
                     return false;
                 }
             }
@@ -193,53 +171,79 @@ namespace IP_Planning_Broker
             }
         }
 
-        private void EnableFallbackQueue()
+        private void QueueMessage(string msg)
         {
-            logger.Log("Enabling fallback queue.", "info");
-            fallbackQueue = new List<string>();
-            autoEvent = new AutoResetEvent(false);
-            retryTimer = new Timer(PublishFallbackQueue, autoEvent, retryInterval, retryInterval);
-        }
-
-        private void DisableFallbackQueue()
-        {
-            logger.Log("Disabling fallback queue.", "info");
-            retryTimer.Dispose();
-            autoEvent.Dispose();
-            fallbackQueue = null;
-            logger.Log("Unfreezing main thread.", "warning");
-            autoEvent.Set();
-            GC.Collect();
-        }
-
-        private void PublishFallbackQueue(Object stateInfo)
-        {
-            int startCount = fallbackQueue.Count;
-
-            logger.Log("Attempting to publish messages from fallback queue", "info");
-            logger.Log("There are currently " + fallbackQueue.Count + " messages in the fallback queue.", "info");
-            while (fallbackQueue.Count > 0 && IsConnected())
+            if(fbQueue == null)
             {
-                if (PublishMessage(fallbackQueue[0]))
-                {
-                    fallbackQueue.RemoveAt(0);
-                }
-            }
-            if (fallbackQueue.Count == 0)
-            {
-                logger.Log("Successfully sent messages.", "info");
-                DisableFallbackQueue();
-            }
-            else if(startCount > fallbackQueue.Count)
-            {
-                logger.Log("Failed to send all messages, trying again in " + retryInterval / 1000 + "s.", "info");
-                logger.Log("Unfreezing main thread.", "warning");
-                autoEvent.Set();
+                EnableFbQueue();
+                fbQueue.Add(msg);
+                logger.Log("Message added to fallback queue.", "info");
             }
             else
             {
-                logger.Log("Failed to send messages.");
+                fbQueue.Add(msg);
+                logger.Log("Message added to fallback queue.", "info");
+
+                if (IsConnected())
+                {
+                    logger.Log("Freezing main thread.", "warning");
+                    threadFrozen = true;
+                    fbRetryTimer.Change(0, -1);
+                    fbAutoEvent.WaitOne();
+                    logger.Log("Main thread unfrozen.", "warning");
+                }
             }
+        }
+
+        private void PublishFbQueue(Object stateInfo)
+        {
+            logger.Log("Attempting to publish messages from fallback queue", "info");
+            logger.Log("There are currently " + fbQueue.Count + " messages in the fallback queue.", "info");
+
+            while (fbQueue.Count > 0 && IsConnected())
+            {
+                if (PublishMessage(fbQueue[0]))
+                {
+                    fbQueue.RemoveAt(0);
+                }
+            }
+            if(threadFrozen && fbQueue.Count == 0)
+            {
+                DisableFbQueue();
+            }
+            else if (threadFrozen && fbQueue.Count != 0)
+            {
+                logger.Log("Unfreezing main thread.", "warning");
+                fbAutoEvent.Set();
+                threadFrozen = false;
+            }
+        }
+
+        private void EnableFbQueue()
+        {
+            logger.Log("Enabling fallback queue.", "info");
+
+            fbQueue = new List<string>();
+            fbAutoEvent = new AutoResetEvent(false);
+            fbRetryTimer = new Timer(PublishFbQueue, fbAutoEvent, 0, fbRetryInterval);
+        }
+
+        private void DisableFbQueue()
+        {
+            //Order is important!
+            logger.Log("Disabling fallback queue.", "info");
+
+            fbRetryTimer.Dispose();
+            fbRetryTimer = null;
+
+            fbQueue = null;
+
+            logger.Log("Unfreezing main thread.", "warning");
+            fbAutoEvent.Set();
+            threadFrozen = false;
+
+            fbAutoEvent.Dispose();
+            fbAutoEvent = null;
         }
     }
 }
