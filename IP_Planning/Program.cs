@@ -34,8 +34,41 @@ namespace IP_Planning
             //Remove this code after testing
             Console.WriteLine("\nWelcome to hello server. This is only for testing purposes.");
 
+            bool badInput = true;
+            int maxcount = 0;
+            int interval = 1000;
+
+            while (badInput)
+            {
+                Console.WriteLine("Please enter the amount of messages you would like to send:");
+                string input = Console.ReadLine();
+                if(Int32.TryParse(input, out maxcount))
+                {
+                    badInput = false;
+                }
+                else
+                {
+                    Console.WriteLine("Bad input.");
+                }
+            }
+
+            badInput = true;
+
+            while (badInput)
+            {
+                Console.WriteLine("Please enter the interval between sending the messages in ms:");
+                string input = Console.ReadLine();
+                if (Int32.TryParse(input, out interval))
+                {
+                    badInput = false;
+                }
+                else
+                {
+                    Console.WriteLine("Bad input.");
+                }
+            }
+
             int counter = 1;
-            int maxcount = 1000;
             bool sending = true;
 
             while (sending)
@@ -43,11 +76,12 @@ namespace IP_Planning
                 message = "Message nr " + counter;
                 broker.NewMessage(message);
                 counter++;
-                Thread.Sleep(100);
+                Thread.Sleep(interval);
                 if (counter > maxcount)
                     sending = false;
             }
-
+            Thread.Sleep(1000);
+            broker.CloseConnection();
             Console.WriteLine("Press enter to quit.");
             Console.ReadLine();
             //----
