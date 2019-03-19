@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace IP_Planning_Broker
 {
-    //test
+    //test 2
     public class Broker
     {
         bool threadFrozen;
