@@ -80,6 +80,12 @@ namespace IP_Planning_GoogleAPI
                 }
             };
 
+            String calendarId = "primary";
+            EventsResource.InsertRequest request = service.Events.Insert(newEvent, calendarId);
+            Event createdEvent = request.Execute();
+            Console.WriteLine("Event created: {0}", createdEvent.HtmlLink);
+            Console.Read();
+
         }
 
         public static void deleteEvent(string eventId)
