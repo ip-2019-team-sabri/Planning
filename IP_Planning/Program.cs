@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using IP_Planning_Broker;
+﻿using IP_Planning_GoogleAPI;
 
 namespace IP_Planning
 {
@@ -8,82 +6,86 @@ namespace IP_Planning
     {
         static void Main(string[] args)
         {
-            //Change this to your credentials.
-            //Check https://docs.google.com/document/d/1juDXoeJSQxVjRHMO8k0yPMVFv3-7bJfH0QSp0yeEedQ/edit?usp=sharing
+            GoogleAPI kak = new GoogleAPI();
 
-            Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Planning", 10000);
+            kak.createCalendar("kakapipi");
+        
+            ////Change this to your credentials.
+            ////Check https://docs.google.com/document/d/1juDXoeJSQxVjRHMO8k0yPMVFv3-7bJfH0QSp0yeEedQ/edit?usp=sharing
 
-            while (!broker.IsConnected())
-            {
-                broker.OpenConnection();
+            //Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Planning", 10000);
 
-                if (!broker.IsConnected())
-                {
-                    Console.Write("INFO: Retrying in 10s.");
-                    Thread.Sleep(3333);
-                    Console.Write(".");
-                    Thread.Sleep(3333);
-                    Console.Write(".");
-                    Thread.Sleep(3333);
-                    Console.Write("\n");
-                }
-            }
+            //while (!broker.IsConnected())
+            //{
+            //    broker.OpenConnection();
 
-            string message;
+            //    if (!broker.IsConnected())
+            //    {
+            //        Console.Write("INFO: Retrying in 10s.");
+            //        Thread.Sleep(3333);
+            //        Console.Write(".");
+            //        Thread.Sleep(3333);
+            //        Console.Write(".");
+            //        Thread.Sleep(3333);
+            //        Console.Write("\n");
+            //    }
+            //}
 
-            //Remove this code after testing
-            Console.WriteLine("\nWelcome to hello server. This is only for testing purposes.");
+            //string message;
 
-            bool badInput = true;
-            int maxcount = 0;
-            int interval = 1000;
+            ////Remove this code after testing
+            //Console.WriteLine("\nWelcome to hello server. This is only for testing purposes.");
 
-            while (badInput)
-            {
-                Console.WriteLine("Please enter the amount of messages you would like to send:");
-                string input = Console.ReadLine();
-                if(Int32.TryParse(input, out maxcount))
-                {
-                    badInput = false;
-                }
-                else
-                {
-                    Console.WriteLine("Bad input.");
-                }
-            }
+            //bool badInput = true;
+            //int maxcount = 0;
+            //int interval = 1000;
 
-            badInput = true;
+            //while (badInput)
+            //{
+            //    Console.WriteLine("Please enter the amount of messages you would like to send:");
+            //    string input = Console.ReadLine();
+            //    if(Int32.TryParse(input, out maxcount))
+            //    {
+            //        badInput = false;
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine("Bad input.");
+            //    }
+            //}
 
-            while (badInput)
-            {
-                Console.WriteLine("Please enter the interval between sending the messages in ms:");
-                string input = Console.ReadLine();
-                if (Int32.TryParse(input, out interval))
-                {
-                    badInput = false;
-                }
-                else
-                {
-                    Console.WriteLine("Bad input.");
-                }
-            }
+            //badInput = true;
 
-            int counter = 1;
-            bool sending = true;
+            //while (badInput)
+            //{
+            //    Console.WriteLine("Please enter the interval between sending the messages in ms:");
+            //    string input = Console.ReadLine();
+            //    if (Int32.TryParse(input, out interval))
+            //    {
+            //        badInput = false;
+            //    }
+            //    else
+            //    {
+            //        Console.WriteLine("Bad input.");
+            //    }
+            //}
 
-            while (sending)
-            {
-                message = "Message nr " + counter;
-                broker.NewMessage(message);
-                counter++;
-                Thread.Sleep(interval);
-                if (counter > maxcount)
-                    sending = false;
-            }
-            Thread.Sleep(1000);
-            broker.CloseConnection();
-            Console.WriteLine("Press enter to quit.");
-            Console.ReadLine();
+            //int counter = 1;
+            //bool sending = true;
+
+            //while (sending)
+            //{
+            //    message = "Message nr " + counter;
+            //    broker.NewMessage(message);
+            //    counter++;
+            //    Thread.Sleep(interval);
+            //    if (counter > maxcount)
+            //        sending = false;
+            //}
+            //Thread.Sleep(1000);
+            //broker.CloseConnection();
+            //Console.WriteLine("Press enter to quit.");
+            //Console.ReadLine();
             //----
         }
     }

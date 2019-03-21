@@ -88,6 +88,52 @@ namespace IP_Planning_GoogleAPI
 
         }
 
+        public void createCalendar(string kalenderNaam)
+        {
+            // If modifying these scopes, delete your previously saved credentials
+            // at ~/.credentials/calendar-dotnet-quickstart.json
+            string[] Scopes = { CalendarService.Scope.Calendar };
+            string ApplicationName = "Google Calendar API .NET Quickstart";
+
+
+            UserCredential credential;
+
+            using (var stream =
+                new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
+            {
+                // The file token.json stores the user's access and refresh tokens, and is created
+                // automatically when the authorization flow completes for the first time.
+                string credPath = "token.json";
+                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    Scopes,
+                    "user",
+                    CancellationToken.None,
+                    new FileDataStore(credPath, true)).Result;
+                Console.WriteLine("Credential file saved to: " + credPath);
+            }
+
+            // Create Google Calendar API service.
+            var service = new CalendarService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = ApplicationName,
+            });
+
+            Calendar calendar = new Calendar()
+            {
+                Summary = kalenderNaam,
+                Description = "EENAWESOMECALENDAR",
+                TimeZone = "Europe/Brussels"
+            };
+
+            CalendarsResource.InsertRequest kak = service.Calendars.Insert(calendar);
+            Calendar createdEvent = kak.Execute();
+            Console.WriteLine("Calendar created: {0}" + createdEvent.Id, createdEvent.Summary);
+            Console.Read();
+
+        }
+
         public static void deleteEvent(string eventId)
         {
             // If modifying these scopes, delete your previously saved credentials

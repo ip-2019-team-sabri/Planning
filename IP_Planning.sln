@@ -3,13 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IP_Planning", "IP_Planning\IP_Planning.csproj", "{77124B92-12A2-48B2-AF7F-83F74D2D9AEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IP_Planning", "IP_Planning\IP_Planning.csproj", "{77124B92-12A2-48B2-AF7F-83F74D2D9AEC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C9E0FB71-71AC-495A-8077-592759ADB168} = {C9E0FB71-71AC-495A-8077-592759ADB168}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IP_Planning_Broker", "IP_Planning_Broker\IP_Planning_Broker.csproj", "{0BDD6953-E6FC-47F2-B4B3-D90818094122}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IP_Planning_Broker", "IP_Planning_Broker\IP_Planning_Broker.csproj", "{0BDD6953-E6FC-47F2-B4B3-D90818094122}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IP_Planning_GoogleAPI", "IP_Planning_GoogleAPI\IP_Planning_GoogleAPI.csproj", "{C9E0FB71-71AC-495A-8077-592759ADB168}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IP_Planning_GoogleAPI", "IP_Planning_GoogleAPI\IP_Planning_GoogleAPI.csproj", "{C9E0FB71-71AC-495A-8077-592759ADB168}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IP_Planning_Database", "IP_Planning_Database\IP_Planning_Database.csproj", "{289C1505-94CC-4345-8B97-FF3328FCDCBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IP_Planning_Database", "IP_Planning_Database\IP_Planning_Database.csproj", "{289C1505-94CC-4345-8B97-FF3328FCDCBA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
