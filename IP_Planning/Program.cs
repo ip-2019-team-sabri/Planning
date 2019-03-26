@@ -1,4 +1,5 @@
 ﻿using IP_Planning_GoogleAPI;
+using System;
 
 namespace IP_Planning
 {
@@ -6,9 +7,12 @@ namespace IP_Planning
     {
         static void Main(string[] args)
         {
-            GoogleAPI kak = new GoogleAPI();
+            GoogleAPI googleAPI = new GoogleAPI();
 
-            kak.createCalendar("kakapipi");
+            //var kal = googleAPI.createCalendar("testNiewKalender"); WERKT!
+            //googleAPI.createEvent(); //WERKT!
+            //googleAPI.deleteEvent("99710u3s357dfjev9eb9ah797k_20190326T180123Z"); WERKT!
+            //googleAPI.deleteCalendar("aggrpeemmreezrd@gmail.com"); WERKT
         
             ////Change this to your credentials.
             ////Check https://docs.google.com/document/d/1juDXoeJSQxVjRHMO8k0yPMVFv3-7bJfH0QSp0yeEedQ/edit?usp=sharing
