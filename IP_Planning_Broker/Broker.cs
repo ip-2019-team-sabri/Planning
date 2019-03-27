@@ -1,4 +1,5 @@
-﻿using RabbitMQ.Client;
+﻿using IP_Planning_Logger;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 using System;
@@ -8,7 +9,6 @@ using System.Threading;
 
 namespace IP_Planning_Broker
 {
-    //test 2
     public class Broker
     {
         bool threadFrozen;
@@ -22,14 +22,14 @@ namespace IP_Planning_Broker
         private string hostName;
         private string queueName;
 
-        List<string> fbQueue;
-        private Timer fbRetryTimer;
-        private AutoResetEvent fbAutoEvent;
-        private int fbRetryInterval;
+        List<string> cachedMessages;
+        private Timer cacheRetryTimer;
+        private AutoResetEvent cacheAutoEvent;
+        private int cacheRetryInterval;
         
         Logger logger;
 
-        public Broker(string userName, string password, string hostName, string queueName, int publishInterval)
+        public Broker(string userName, string password, string hostName, string queueName, int cacheRetryInterval)
         {
             threadFrozen = false;
 
@@ -38,12 +38,12 @@ namespace IP_Planning_Broker
             this.hostName = hostName;
             this.queueName = queueName;
 
-            fbQueue = null;
-            fbRetryTimer = null;
-            fbAutoEvent = null;
-            fbRetryInterval = publishInterval;
+            cachedMessages = null;
+            cacheRetryTimer = null;
+            cacheAutoEvent = null;
+            this.cacheRetryInterval = cacheRetryInterval;
 
-            logger = new Logger();
+            logger = Logger.Instance;
         }
 
         public bool IsConnected()
@@ -128,16 +128,16 @@ namespace IP_Planning_Broker
 
         public void NewMessage(string msg)
         {
-            if (fbQueue == null)
+            if (cachedMessages == null)
             {
                 if (!PublishMessage(msg))
                 {
-                    QueueMessage(msg);
+                    CacheMessage(msg);
                 }
             }
             else
             {
-                QueueMessage(msg);
+                CacheMessage(msg);
             }
         }
 
@@ -172,79 +172,79 @@ namespace IP_Planning_Broker
             }
         }
 
-        private void QueueMessage(string msg)
+        private void CacheMessage(string msg)
         {
-            if(fbQueue == null)
+            if(cachedMessages == null)
             {
-                EnableFbQueue();
-                fbQueue.Add(msg);
+                EnableCache();
+                cachedMessages.Add(msg);
                 logger.Log("Message added to fallback queue.", "info");
             }
             else
             {
-                fbQueue.Add(msg);
+                cachedMessages.Add(msg);
                 logger.Log("Message added to fallback queue.", "info");
 
                 if (IsConnected())
                 {
                     logger.Log("Freezing main thread.", "warning");
                     threadFrozen = true;
-                    fbRetryTimer.Change(0, -1);
-                    fbAutoEvent.WaitOne();
+                    cacheRetryTimer.Change(0, -1);
+                    cacheAutoEvent.WaitOne();
                     logger.Log("Main thread unfrozen.", "warning");
                 }
             }
         }
 
-        private void PublishFbQueue(Object stateInfo)
+        private void PublishCachedMessages(Object stateInfo)
         {
             logger.Log("Attempting to publish messages from fallback queue", "info");
-            logger.Log("There are currently " + fbQueue.Count + " messages in the fallback queue.", "info");
+            logger.Log("There are currently " + cachedMessages.Count + " messages in the fallback queue.", "info");
 
-            while (fbQueue.Count > 0 && IsConnected())
+            while (cachedMessages.Count > 0 && IsConnected())
             {
-                if (PublishMessage(fbQueue[0]))
+                if (PublishMessage(cachedMessages[0]))
                 {
-                    fbQueue.RemoveAt(0);
+                    cachedMessages.RemoveAt(0);
                 }
             }
-            if(threadFrozen && fbQueue.Count == 0)
+            if(threadFrozen && cachedMessages.Count == 0)
             {
-                DisableFbQueue();
+                DisableCache();
             }
-            else if (threadFrozen && fbQueue.Count != 0)
+            else if (threadFrozen && cachedMessages.Count != 0)
             {
                 logger.Log("Unfreezing main thread.", "warning");
-                fbAutoEvent.Set();
+                cacheAutoEvent.Set();
                 threadFrozen = false;
             }
         }
 
-        private void EnableFbQueue()
+        private void EnableCache()
         {
             logger.Log("Enabling fallback queue.", "info");
 
-            fbQueue = new List<string>();
-            fbAutoEvent = new AutoResetEvent(false);
-            fbRetryTimer = new Timer(PublishFbQueue, fbAutoEvent, 0, fbRetryInterval);
+            cachedMessages = new List<string>();
+            cacheAutoEvent = new AutoResetEvent(false);
+            cacheRetryTimer = new Timer(PublishCachedMessages, cacheAutoEvent, 0, cacheRetryInterval);
         }
 
-        private void DisableFbQueue()
+        private void DisableCache()
         {
             //Order is important!
             logger.Log("Disabling fallback queue.", "info");
 
-            fbRetryTimer.Dispose();
-            fbRetryTimer = null;
+            cacheRetryTimer.Dispose();
+            cacheRetryTimer = null;
 
-            fbQueue = null;
+            cachedMessages = null;
 
             logger.Log("Unfreezing main thread.", "warning");
-            fbAutoEvent.Set();
+            cacheAutoEvent.Set();
             threadFrozen = false;
 
-            fbAutoEvent.Dispose();
-            fbAutoEvent = null;
+            cacheAutoEvent.Dispose();
+            cacheAutoEvent = null;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using IP_Planning_Broker;
+using IP_Planning_Logger;
 
 namespace IP_Planning
 {
@@ -13,19 +14,16 @@ namespace IP_Planning
 
             Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Planning", 10000);
 
+            Logger logger = Logger.Instance;
+            logger.Welcome();
+
             while (!broker.IsConnected())
             {
                 broker.OpenConnection();
 
                 if (!broker.IsConnected())
                 {
-                    Console.Write("INFO: Retrying in 10s.");
-                    Thread.Sleep(3333);
-                    Console.Write(".");
-                    Thread.Sleep(3333);
-                    Console.Write(".");
-                    Thread.Sleep(3333);
-                    Console.Write("\n");
+                    logger.Log("Retrying in 10s","info");
                 }
             }
 
@@ -48,7 +46,7 @@ namespace IP_Planning
                 }
                 else
                 {
-                    Console.WriteLine("Bad input.");
+                    logger.Log("Bad input.","error");
                 }
             }
 
@@ -56,7 +54,7 @@ namespace IP_Planning
 
             while (badInput)
             {
-                Console.WriteLine("Please enter the interval between sending the messages in ms:");
+                logger.Log("Please enter the interval between sending the messages in ms:","info");
                 string input = Console.ReadLine();
                 if (Int32.TryParse(input, out interval))
                 {
@@ -80,6 +78,8 @@ namespace IP_Planning
                 if (counter > maxcount)
                     sending = false;
             }
+
+
             Thread.Sleep(1000);
             broker.CloseConnection();
             Console.WriteLine("Press enter to quit.");
