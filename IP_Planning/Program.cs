@@ -1,6 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
+using System.Xml.Serialization;
 using IP_Planning_Broker;
+using IP_Planning_Broker.Messages;
 using IP_Planning_Logger;
 
 namespace IP_Planning
@@ -9,81 +12,51 @@ namespace IP_Planning
     {
         static void Main(string[] args)
         {
+
+//########## Set up the broker ##########
+
             //Change this to your credentials.
             //Check https://docs.google.com/document/d/1juDXoeJSQxVjRHMO8k0yPMVFv3-7bJfH0QSp0yeEedQ/edit?usp=sharing
 
-            Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Planning", 10000);
+            Broker broker = new Broker("amqPlanning", "amqPlanning", "10.3.56.10", "Planning");
 
+            //Check the "Logs" directory for the logfiles if you encounter any problems
             Logger logger = Logger.Instance;
             logger.Welcome();
 
-            while (!broker.IsConnected())
+            broker.OpenConnection();
+
+//########## Example of sending a message ##########
+
+            //Create a new message object
+            PingMessage ping = new PingMessage
             {
-                broker.OpenConnection();
-
-                if (!broker.IsConnected())
+                header = new PingMessageHeader
                 {
-                    logger.Log("Retrying in 10s","info");
-                }
-            }
-
-            string message;
-
-            //Remove this code after testing
-            Console.WriteLine("\nWelcome to hello server. This is only for testing purposes.");
-
-            bool badInput = true;
-            int maxcount = 0;
-            int interval = 1000;
-
-            while (badInput)
-            {
-                Console.WriteLine("Please enter the amount of messages you would like to send:");
-                string input = Console.ReadLine();
-                if(Int32.TryParse(input, out maxcount))
+                    timestamp = DateTime.Now,
+                    versie = "1"
+                },
+                body = new PingMessageBody
                 {
-                    badInput = false;
+                    //To create a new GUID use this ONE LINE of code INSTEAD OF A CENTRALIZED STUPID DATABASE
+                    pingUUID = Guid.NewGuid().ToString()
                 }
-                else
-                {
-                    logger.Log("Bad input.","error");
-                }
-            }
+            };
 
-            badInput = true;
+            //Serialize the object and convert it to a string
+            XmlSerializer mySerializer = new XmlSerializer(typeof(PingMessage));
+            StringWriter writer = new StringWriter();
+            mySerializer.Serialize(writer, ping);
+            string message = writer.ToString();
 
-            while (badInput)
-            {
-                logger.Log("Please enter the interval between sending the messages in ms:","info");
-                string input = Console.ReadLine();
-                if (Int32.TryParse(input, out interval))
-                {
-                    badInput = false;
-                }
-                else
-                {
-                    Console.WriteLine("Bad input.");
-                }
-            }
+            //Send the message to the broker
+            broker.NewMessage(message);
 
-            int counter = 1;
-            bool sending = true;
-
-            while (sending)
-            {
-                message = "Message nr " + counter;
-                broker.NewMessage(message);
-                counter++;
-                Thread.Sleep(interval);
-                if (counter > maxcount)
-                    sending = false;
-            }
-
-
-            Thread.Sleep(1000);
-            broker.CloseConnection();
+            
             Console.WriteLine("Press enter to quit.");
             Console.ReadLine();
+
+            broker.CloseConnection();
             //----
         }
     }

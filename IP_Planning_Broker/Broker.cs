@@ -1,11 +1,15 @@
-﻿using IP_Planning_Logger;
+﻿using IP_Planning_Broker.Messages;
+using IP_Planning_Logger;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace IP_Planning_Broker
 {
@@ -25,11 +29,19 @@ namespace IP_Planning_Broker
         List<string> cachedMessages;
         private Timer cacheRetryTimer;
         private AutoResetEvent cacheAutoEvent;
-        private int cacheRetryInterval;
         
+
+        private Timer connectionRetryTimer;
+        private AutoResetEvent connectionAutoEvent;
+
+        //
+        private const int connectionTimeoutInterval = 5000;
+        private const int connectionRetryInterval = 30000;
+        private const int cacheRetryInterval = 60000;
+
         Logger logger;
 
-        public Broker(string userName, string password, string hostName, string queueName, int cacheRetryInterval)
+        public Broker(string userName, string password, string hostName, string queueName)
         {
             threadFrozen = false;
 
@@ -41,10 +53,57 @@ namespace IP_Planning_Broker
             cachedMessages = null;
             cacheRetryTimer = null;
             cacheAutoEvent = null;
-            this.cacheRetryInterval = cacheRetryInterval;
+
+            connectionRetryTimer = null;
+            connectionAutoEvent = null;
 
             logger = Logger.Instance;
         }
+
+    //####### IMPLEMENT ACTIONS FOR MESSAGES HERE ######
+
+        //This is the method that gets called when a message arrives
+        private void ProcessMessage(string message)
+        {
+            try
+            {
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(message);
+
+                //Get the type of the message
+                string messageType = doc.DocumentElement.Name;
+
+                logger.Log("Received message of type: " + messageType, "info");
+
+                if (messageType == "PingMessage")
+                {
+                    logger.Log("Processing message", "info");
+                    XmlSerializer serializer = new XmlSerializer(typeof(PingMessage));
+                    XmlReader reader = new XmlNodeReader(doc);
+                    PingMessage pingMessage = (PingMessage)serializer.Deserialize(reader);
+
+                    //Do something with pingMessage
+
+                }
+                else if(messageType == "EventMessage")
+                {
+                    logger.Log("Processing message", "info");
+                }
+                else
+                {
+                    logger.Log("Discarding message", "info");
+                }
+            }
+            catch (XmlException e)
+            {
+                logger.Log("Could not process message: " + e.GetType(), "error");
+            }
+        }
+
+    //####### DO NOT EDIT THE CODE BELOW THIS COMMENT #######
+
+        //These are the only methods you need to use the broker
+        #region Public methods
 
         public bool IsConnected()
         {
@@ -57,53 +116,13 @@ namespace IP_Planning_Broker
 
         public void OpenConnection()
         {
-            if (connection == null)
-            {
-                ConnectionFactory factory = new ConnectionFactory()
-                {
-                    UserName = userName,
-                    Password = password,
-                    HostName = hostName
-                };
-
-                try
-                {
-                    logger.Log("Connecting to RabbitMQ server...", "info");
-
-                    connection = factory.CreateConnection();
-                    consumerChannel = connection.CreateModel();
-                    publisherChannel = connection.CreateModel();
-
-                    var consumer = new EventingBasicConsumer(consumerChannel);
-                    consumer.Received += (model, ea) =>
-                    {
-                        var body = ea.Body;
-                        var message = Encoding.UTF8.GetString(body);
-                        logger.Log("Received message: " + message, "info");
-                    };
-
-                    consumerChannel.BasicConsume(queue: queueName,
-                                         autoAck: true,
-                                         consumer: consumer);
-
-                    logger.Log("Success!", "info");
-                }
-                catch (BrokerUnreachableException e)
-                {
-                    logger.Log("Failed to connect to RabbitMQ server. " + e.GetType(), "error");
-                    CloseConnection();
-                }
-                catch (OperationInterruptedException e)
-                {
-                    logger.Log("Failed to connect to RabbitMQ server. " + e.GetType(), "error");
-                    CloseConnection();
-                }
-            }
+            connectionAutoEvent = new AutoResetEvent(false);
+            connectionRetryTimer = new Timer(TryConnection, connectionAutoEvent, 0, connectionRetryInterval);
+            connectionAutoEvent.WaitOne();
         }
 
         public void CloseConnection()
         {
-            logger.Log("Closing connection...", "info");
             if (consumerChannel != null)
             {
                 consumerChannel.Close();
@@ -141,6 +160,9 @@ namespace IP_Planning_Broker
             }
         }
 
+        #endregion
+
+        #region Private methods
         private bool PublishMessage(string msg)
         {
             try
@@ -174,16 +196,16 @@ namespace IP_Planning_Broker
 
         private void CacheMessage(string msg)
         {
-            if(cachedMessages == null)
+            if (cachedMessages == null)
             {
                 EnableCache();
                 cachedMessages.Add(msg);
-                logger.Log("Message added to fallback queue.", "info");
+                logger.Log("Message added to cache.", "info");
             }
             else
             {
                 cachedMessages.Add(msg);
-                logger.Log("Message added to fallback queue.", "info");
+                logger.Log("Message added to cache.", "info");
 
                 if (IsConnected())
                 {
@@ -208,7 +230,7 @@ namespace IP_Planning_Broker
                     cachedMessages.RemoveAt(0);
                 }
             }
-            if(threadFrozen && cachedMessages.Count == 0)
+            if (threadFrozen && cachedMessages.Count == 0)
             {
                 DisableCache();
             }
@@ -246,5 +268,68 @@ namespace IP_Planning_Broker
             cacheAutoEvent.Dispose();
             cacheAutoEvent = null;
         }
+
+        private void TryConnection(Object stateInfo)
+        {
+            if (connection == null)
+            {
+                ConnectionFactory factory = new ConnectionFactory()
+                {
+                    UserName = userName,
+                    Password = password,
+                    HostName = hostName,
+                    RequestedConnectionTimeout = connectionTimeoutInterval
+                };
+
+                try
+                {
+                    logger.Log("Connecting to RabbitMQ server...", "info");
+
+                    connection = factory.CreateConnection();
+                    consumerChannel = connection.CreateModel();
+                    publisherChannel = connection.CreateModel();
+
+                    var consumer = new EventingBasicConsumer(consumerChannel);
+                    consumer.Received += (model, ea) =>
+                    {
+                        var body = ea.Body;
+                        var message = Encoding.UTF8.GetString(body);
+
+                        ProcessMessage(message);
+                    };
+
+                    consumerChannel.BasicConsume(queue: queueName,
+                                         autoAck: true,
+                                         consumer: consumer);
+
+                    logger.Log("Success!", "info");
+                    DisableConnectioRetryTimer();
+                }
+                catch (BrokerUnreachableException e)
+                {
+                    logger.Log("Failed to connect to RabbitMQ server: " + e.GetType(), "error");
+                    CloseConnection();
+                    connectionAutoEvent.Set();
+                }
+                catch (OperationInterruptedException e)
+                {
+                    logger.Log("Failed to connect to RabbitMQ server: " + e.GetType(), "error");
+                    CloseConnection();
+                    connectionAutoEvent.Set();
+                }
+            }
+        }
+
+        private void DisableConnectioRetryTimer()
+        {
+            connectionRetryTimer.Dispose();
+
+            connectionAutoEvent.Set();
+            connectionAutoEvent.Dispose();
+
+            connectionRetryTimer = null;
+            connectionAutoEvent = null;
+        }
+        #endregion
     }
 }
