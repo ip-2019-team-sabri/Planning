@@ -1,5 +1,7 @@
-﻿using IP_Planning_GoogleAPI;
+﻿using Google.Apis.Calendar.v3.Data;
+using IP_Planning_GoogleAPI;
 using System;
+using System.Collections.Generic;
 
 namespace IP_Planning
 {
@@ -9,11 +11,17 @@ namespace IP_Planning
         {
             GoogleAPI googleAPI = new GoogleAPI();
 
-            //var kal = googleAPI.createCalendar("testNiewKalender"); WERKT!
-            //googleAPI.createEvent(); //WERKT!
-            //googleAPI.deleteEvent("99710u3s357dfjev9eb9ah797k_20190326T180123Z"); WERKT!
+            //var kal = googleAPI.createCalendar("testNiewKalender"); WERKT
+            //googleAPI.createEvent(); //WERKT
+            //googleAPI.deleteEvent("99710u3s357dfjev9eb9ah797k_20190326T180123Z"); WERKT
             //googleAPI.deleteCalendar("aggrpeemmreezrd@gmail.com"); WERKT
-        
+            //googleAPI.updateEvent("dit is een upgedate description lol", "aggrpeemmreezrd@gmail.com", "btsrhr4coft927041nlucsro70"); WERKT
+            //googleAPI.updateCalendar("dit is een upgedate description", "aggrpeemmreezrd@gmail.com"); WERKT
+            //googleAPI.getEvents("aggrpeemmreezrd@gmail.com"); WERKT
+            //googleAPI.getCalendars("aggrpeemmreezrd@gmail.com"); WERKT
+
+
+            Console.ReadKey();        
             ////Change this to your credentials.
             ////Check https://docs.google.com/document/d/1juDXoeJSQxVjRHMO8k0yPMVFv3-7bJfH0QSp0yeEedQ/edit?usp=sharing
 

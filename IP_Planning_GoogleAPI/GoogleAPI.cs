@@ -91,7 +91,7 @@ namespace IP_Planning_GoogleAPI
             return createdEvent;
         }
 
-        public object updateEvent(object Event)
+        public void updateEvent(string updatedDescription, string calendarId, string eventId)
         {
             // If modifying these scopes, delete your previously saved credentials
             // at ~/.credentials/calendar-dotnet-quickstart.json
@@ -123,30 +123,13 @@ namespace IP_Planning_GoogleAPI
                 ApplicationName = ApplicationName,
             });
 
-            Event newEvent = new Event() //gegevens die hieronder komen zullen later uit de object in de paramlijst gehaald worden
-            {
-                Summary = "Nieuw Event", // Event.Summary
-                Location = "800 Howard St., San Francisco, CA 94103",//Event.Location
-                Description = "A chance to hear more about Google's developer products.",//Event.Description
-                Start = new EventDateTime()
-                {
-                    DateTime = DateTime.Now,//Event.DateTime
-                    TimeZone = "America/Los_Angeles",//Event.TimeZone
-                },
-                End = new EventDateTime()
-                {
-                    DateTime = DateTime.Now,//Event.DateTime
-                    TimeZone = "America/Los_Angeles",//Event.TimeZone
-                }
-            };
+            EventsResource.GetRequest getRequest = service.Events.Get(calendarId, eventId);
+            Event updateEvent = getRequest.Execute();
+            updateEvent.Description = updatedDescription;
 
-            String calendarId = "primary";
-            EventsResource.InsertRequest request = service.Events.Insert(newEvent, calendarId);
-            Event updateEvent = request.Execute();
-            Console.WriteLine("Event created: {0}", updateEvent.HtmlLink);
-            Console.Read();
-
-            return updateEvent;
+            EventsResource.UpdateRequest updateRequest = service.Events.Update(updateEvent, calendarId, eventId);
+            updateRequest.Execute();
+            
         }
 
         public object createCalendar(string kalenderNaam)
@@ -196,7 +179,7 @@ namespace IP_Planning_GoogleAPI
             return createdCal;
         }
 
-        public object updateCalendar(object kalender)
+        public void updateCalendar(string updateDescription, string calendarId)
         {
             // If modifying these scopes, delete your previously saved credentials
             // at ~/.credentials/calendar-dotnet-quickstart.json
@@ -228,19 +211,14 @@ namespace IP_Planning_GoogleAPI
                 ApplicationName = ApplicationName,
             });
 
-            Calendar calendar = new Calendar()
-            {
-                Summary = "", //kalender.Summary,
-                Description = "", // kalender.Description,
-                TimeZone = ""//kalender.TimeZone,
-            };
+            CalendarsResource.GetRequest getRequest = service.Calendars.Get(calendarId);
+            Calendar updateCalendar = getRequest.Execute();
 
-            CalendarsResource.InsertRequest updateKal = service.Calendars.Insert(calendar);
-            Calendar updateKalender = updateKal.Execute();
-            Console.WriteLine("Calendar geupdate: {0}" + updateKalender.Id, updateKalender.Summary);
-            Console.Read();
+            updateCalendar.Description = updateDescription;
 
-            return updateKal;
+            CalendarsResource.UpdateRequest updateRequest = service.Calendars.Update(updateCalendar, calendarId);
+            updateRequest.Execute();
+            
         }
 
         public void deleteEvent(string eventId)
@@ -322,7 +300,7 @@ namespace IP_Planning_GoogleAPI
             */
         }
 
-        public void getEventsList()
+        public void getEvents(string calendarId)
         {
             // If modifying these scopes, delete your previously saved credentials
             // at ~/.credentials/calendar-dotnet-quickstart.json
@@ -354,9 +332,55 @@ namespace IP_Planning_GoogleAPI
                 ApplicationName = ApplicationName,
             });
 
-            EventsResource.ListRequest eventsListReq = service.Events.List("primary");
-            Events events = eventsListReq.Execute();
-            Console.WriteLine(events);
+            EventsResource.ListRequest listRequest = service.Events.List(calendarId);
+            Events events = listRequest.Execute();
+
+            foreach (var myEvent in events.Items)
+            {
+                Console.WriteLine(string.Format("Event: {0} Start: {1} End: {2}", myEvent.Summary, myEvent.Start.DateTime.ToString(), myEvent.End.DateTime.ToString()));
+            }
+        }
+
+        public void getCalendars(string calendarId)
+        {
+            // If modifying these scopes, delete your previously saved credentials
+            // at ~/.credentials/calendar-dotnet-quickstart.json
+            string[] Scopes = { CalendarService.Scope.Calendar };
+            string ApplicationName = "Google Calendar API .NET Quickstart";
+
+
+            UserCredential credential;
+
+            using (var stream =
+                new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
+            {
+                // The file token.json stores the user's access and refresh tokens, and is created
+                // automatically when the authorization flow completes for the first time.
+                string credPath = "token.json";
+                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    Scopes,
+                    "user",
+                    CancellationToken.None,
+                    new FileDataStore(credPath, true)).Result;
+                Console.WriteLine("Credential file saved to: " + credPath);
+            }
+
+            // Create Google Calendar API service.
+            var service = new CalendarService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = ApplicationName,
+            });
+
+            CalendarListResource.ListRequest list = service.CalendarList.List();
+            CalendarList calendarList =  list.Execute();
+
+            foreach (var calendar in calendarList.Items)
+            {
+                Console.WriteLine(string.Format("CalendarName: {0}", calendar.Description.ToString()));
+            }
+
             Console.ReadKey();
         }
     }
