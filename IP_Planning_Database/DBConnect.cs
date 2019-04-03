@@ -1,177 +1,134 @@
-﻿/*
-using System;
+﻿using System;
+using System.Data;
+using MySql.Data;
 using MySql.Data.MySqlClient;
 
 namespace IP_Planning_Database
 {
     public class DBConnect
     {
-        private MySqlConnection connection;
-        private string server;
-        private string database;
-        private string uid;
-        private string password;
-
-        //Constructor
-        public DBConnect()
+        public void select()
         {
-            Initialize();
-        }
-
-        //Initialize values
-        private void Initialize()
-        {
-            server = "localhost";
-            database = "connectcsharptomysql";
-            uid = "username";
-            password = "password";
-            string connectionString;
-            connectionString = "SERVER=" + server + ";" + "DATABASE=" +
-            database + ";" + "UID=" + uid + ";" + "PASSWORD=" + password + ";";
-
-            connection = new MySqlConnection(connectionString);
-        }
-
-        //open connection to database
-        private bool OpenConnection()
-        {
+            string connStr = "server=localhost;user=root;database=planning;port=3306;password=maxime";
+            MySqlConnection conn = new MySqlConnection(connStr);
             try
             {
-                connection.Open();
-                return true;
-            }
-            catch (MySqlException ex)
-            {
-                //When handling errors, you can your application's response based 
-                //on the error number.
-                //The two most common error numbers when connecting are as follows:
-                //0: Cannot connect to server.
-                //1045: Invalid user name and/or password.
-                switch (ex.Number)
-                {
-                    case 0:
-                        MessageBox.Show("Cannot connect to server.  Contact administrator");
-                        break;
+                Console.WriteLine("Connecting to MySQL...");
+                conn.Open();
 
-                    case 1045:
-                        MessageBox.Show("Invalid username/password, please try again");
-                        break;
+                string sql = "SELECT id from test";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                MySqlDataReader rdr = cmd.ExecuteReader();
+
+                while (rdr.Read())
+                {
+                    Console.WriteLine(rdr[0]); // + " -- " + rdr[1]);
                 }
-                return false;
+                rdr.Close();
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
+            conn.Close();
+            Console.WriteLine("Done.");
         }
 
-        //Close connection
-        private bool CloseConnection()
+        public void insert()
         {
+            string connStr = "server=localhost;user=root;database=planning;port=3306;password=maxime";
+            MySqlConnection conn = new MySqlConnection(connStr);
             try
             {
-                connection.Close();
-                return true;
-            }
-            catch (MySqlException ex)
-            {
-                MessageBox.Show(ex.Message);
-                return false;
-            }
-        }
+                Console.WriteLine("Connecting to MySQL...");
+                conn.Open();
 
-        //Insert statement
-        public void Insert()
-        {
-            string query = "INSERT INTO tableinfo (name, age) VALUES('John Smith', '33')";
-
-            //open connection
-            if (this.OpenConnection() == true)
-            {
-                //create command and assign the query and connection from the constructor
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-
-                //Execute command
+                string sql = "INSERT INTO test (id) VALUES (2)";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
                 cmd.ExecuteNonQuery();
-
-                //close connection
-                this.CloseConnection();
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
+            conn.Close();
+            Console.WriteLine("Done.");
+
         }
 
-        //Update statement
-        public void Update()
+        public void update()
         {
-            string query = "UPDATE tableinfo SET name='Joe', age='22' WHERE name='John Smith'";
-
-            //Open connection
-            if (this.OpenConnection() == true)
+            string connStr = "server=localhost;user=root;database=planning;port=3306;password=maxime";
+            MySqlConnection conn = new MySqlConnection(connStr);
+            try
             {
-                //create mysql command
-                MySqlCommand cmd = new MySqlCommand();
-                //Assign the query using CommandText
-                cmd.CommandText = query;
-                //Assign the connection using Connection
-                cmd.Connection = connection;
+                Console.WriteLine("Connecting to MySQL...");
+                conn.Open();
 
-                //Execute query
+                string sql = "UPDATE test SET id = 3 WHERE id = 2";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
                 cmd.ExecuteNonQuery();
-
-                //close connection
-                this.CloseConnection();
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
+            conn.Close();
+            Console.WriteLine("Done.");
         }
 
-        //Delete statement
-        public void Delete()
+        public void delete()
         {
-            string query = "DELETE FROM tableinfo WHERE name='John Smith'";
-
-            if (this.OpenConnection() == true)
+            string connStr = "server=localhost;user=root;database=planning;port=3306;password=maxime";
+            MySqlConnection conn = new MySqlConnection(connStr);
+            try
             {
-                MySqlCommand cmd = new MySqlCommand(query, connection);
+                Console.WriteLine("Connecting to MySQL...");
+                conn.Open();
+
+                string sql = "DELETE FROM test WHERE id = 3";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
                 cmd.ExecuteNonQuery();
-                this.CloseConnection();
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+
+            conn.Close();
+            Console.WriteLine("Done.");
         }
 
-        //Select statement
-        public List<string>[] Select()
+        public static void count()
         {
-            string query = "SELECT * FROM tableinfo";
-
-            //Create a list to store the result
-            List<string>[] list = new List<string>[3];
-            list[0] = new List<string>();
-            list[1] = new List<string>();
-            list[2] = new List<string>();
-
-            //Open connection
-            if (this.OpenConnection() == true)
+            string connStr = "server=localhost;user=root;database=world;port=3306;password=******";
+            MySqlConnection conn = new MySqlConnection(connStr);
+            try
             {
-                //Create Command
-                MySqlCommand cmd = new MySqlCommand(query, connection);
-                //Create a data reader and Execute the command
-                MySqlDataReader dataReader = cmd.ExecuteReader();
+                Console.WriteLine("Connecting to MySQL...");
+                conn.Open();
 
-                //Read the data and store them in the list
-                while (dataReader.Read())
+                string sql = "SELECT COUNT(*) FROM Country";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                object result = cmd.ExecuteScalar();
+                if (result != null)
                 {
-                    list[0].Add(dataReader["id"] + "");
-                    list[1].Add(dataReader["name"] + "");
-                    list[2].Add(dataReader["age"] + "");
+                    int r = Convert.ToInt32(result);
+                    Console.WriteLine("Number of countries in the world database is: " + r);
                 }
 
-                //close Data Reader
-                dataReader.Close();
-
-                //close Connection
-                this.CloseConnection();
-
-                //return list to be displayed
-                return list;
             }
-            else
+            catch (Exception ex)
             {
-                return list;
+                Console.WriteLine(ex.ToString());
             }
+
+            conn.Close();
+            Console.WriteLine("Done.");
         }
     }
 }
-*/
+

@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IP_Planning_Broker\IP_Planning_Broker.csproj" />
+    <ProjectReference Include="..\IP_Planning_Database\IP_Planning_Database.csproj" />
     <ProjectReference Include="..\IP_Planning_GoogleAPI\IP_Planning_GoogleAPI.csproj" />
   </ItemGroup>
 

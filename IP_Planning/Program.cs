@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Calendar.v3.Data;
 using IP_Planning_GoogleAPI;
+using IP_Planning_Database;
 using System;
 using System.Collections.Generic;
 
@@ -9,7 +10,7 @@ namespace IP_Planning
     {
         static void Main(string[] args)
         {
-            GoogleAPI googleAPI = new GoogleAPI();
+            //GoogleAPI googleAPI = new GoogleAPI();
 
             //var kal = googleAPI.createCalendar("testNiewKalender"); WERKT
             //googleAPI.createEvent(); //WERKT
@@ -21,7 +22,14 @@ namespace IP_Planning
             //googleAPI.getCalendars("aggrpeemmreezrd@gmail.com"); WERKT
 
 
-            Console.ReadKey();        
+            //DBConnect db = new DBConnect();
+            //db.select(); WERKT
+            //db.insert(); WERKT
+            //db.update(); WERKT
+            //db.delete(); WERKT
+
+            //Console.ReadKey();        
+
             ////Change this to your credentials.
             ////Check https://docs.google.com/document/d/1juDXoeJSQxVjRHMO8k0yPMVFv3-7bJfH0QSp0yeEedQ/edit?usp=sharing
 
