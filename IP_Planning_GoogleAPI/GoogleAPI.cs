@@ -132,7 +132,7 @@ namespace IP_Planning_GoogleAPI
             
         }
 
-        public object createCalendar(string kalenderNaam)
+        public void createCalendar(string kalenderNaam)
         {
             // If modifying these scopes, delete your previously saved credentials
             // at ~/.credentials/calendar-dotnet-quickstart.json
@@ -176,7 +176,6 @@ namespace IP_Planning_GoogleAPI
             Console.WriteLine("Calendar created: {0}" + createdCal.Id, createdCal.Summary);
             Console.Read();
 
-            return createdCal;
         }
 
         public void updateCalendar(string updateDescription, string calendarId)
@@ -337,7 +336,7 @@ namespace IP_Planning_GoogleAPI
 
             foreach (var myEvent in events.Items)
             {
-                Console.WriteLine(string.Format("Event: {0} Start: {1} End: {2}", myEvent.Summary, myEvent.Start.DateTime.ToString(), myEvent.End.DateTime.ToString()));
+                Console.WriteLine(string.Format("EventSummary: {0} EventID: {1}", myEvent.Summary, myEvent.Id));
             }
         }
 
@@ -378,7 +377,7 @@ namespace IP_Planning_GoogleAPI
 
             foreach (var calendar in calendarList.Items)
             {
-                Console.WriteLine(string.Format("CalendarName: {0}", calendar.Description.ToString()));
+                Console.WriteLine(string.Format("CalendarSummary: {0} CalendarID: {1}", calendar.Summary, calendar.Id));
             }
 
             Console.ReadKey();

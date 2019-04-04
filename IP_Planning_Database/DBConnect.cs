@@ -7,7 +7,7 @@ namespace IP_Planning_Database
 {
     public class DBConnect
     {
-        public void select()
+        public void selectAll()
         {
             string connStr = "server=localhost;user=root;database=planning;port=3306;password=maxime";
             MySqlConnection conn = new MySqlConnection(connStr);
@@ -16,14 +16,15 @@ namespace IP_Planning_Database
                 Console.WriteLine("Connecting to MySQL...");
                 conn.Open();
 
-                string sql = "SELECT id from test";
+                string sql = "SELECT id FROM test";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 MySqlDataReader rdr = cmd.ExecuteReader();
-
+               
                 while (rdr.Read())
                 {
-                    Console.WriteLine(rdr[0]); // + " -- " + rdr[1]);
+                    Console.WriteLine(rdr[0]);
                 }
+
                 rdr.Close();
             }
             catch (Exception ex)
@@ -35,7 +36,7 @@ namespace IP_Planning_Database
             Console.WriteLine("Done.");
         }
 
-        public void insert()
+        public void insert(int getal)
         {
             string connStr = "server=localhost;user=root;database=planning;port=3306;password=maxime";
             MySqlConnection conn = new MySqlConnection(connStr);
@@ -44,7 +45,7 @@ namespace IP_Planning_Database
                 Console.WriteLine("Connecting to MySQL...");
                 conn.Open();
 
-                string sql = "INSERT INTO test (id) VALUES (2)";
+                string sql = "INSERT INTO test (id) VALUES (" + getal + ")";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 cmd.ExecuteNonQuery();
             }

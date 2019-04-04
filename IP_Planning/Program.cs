@@ -14,19 +14,19 @@ namespace IP_Planning
 
             //var kal = googleAPI.createCalendar("testNiewKalender"); WERKT
             //googleAPI.createEvent(); //WERKT
-            //googleAPI.deleteEvent("99710u3s357dfjev9eb9ah797k_20190326T180123Z"); WERKT
+            //googleAPI.deleteEvent("99710u3s357dfjev9eb9ah797k_20190326T180123Z"); //WERKT
             //googleAPI.deleteCalendar("aggrpeemmreezrd@gmail.com"); WERKT
-            //googleAPI.updateEvent("dit is een upgedate description lol", "aggrpeemmreezrd@gmail.com", "btsrhr4coft927041nlucsro70"); WERKT
-            //googleAPI.updateCalendar("dit is een upgedate description", "aggrpeemmreezrd@gmail.com"); WERKT
-            //googleAPI.getEvents("aggrpeemmreezrd@gmail.com"); WERKT
-            //googleAPI.getCalendars("aggrpeemmreezrd@gmail.com"); WERKT
+            //googleAPI.updateEvent("dit is een upgedate description lol", "aggrpeemmreezrd@gmail.com", "btsrhr4coft927041nlucsro70"); //WERKT
+            //googleAPI.updateCalendar("dit is een upgedate description", "aggrpeemmreezrd@gmail.com"); //WERKT
+            //googleAPI.getEvents("aggrpeemmreezrd@gmail.com"); //WERKT
+            //googleAPI.getCalendars("aggrpeemmreezrd@gmail.com"); //WERKT
 
 
             //DBConnect db = new DBConnect();
-            //db.select(); WERKT
-            //db.insert(); WERKT
-            //db.update(); WERKT
-            //db.delete(); WERKT
+            //db.selectAll(); //WERKT
+            //db.insert(4); //WERKT
+            //db.update(); //WERKT
+            //db.delete(); //WERKT
 
             //Console.ReadKey();        
 
