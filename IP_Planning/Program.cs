@@ -23,12 +23,19 @@ namespace IP_Planning
 
 
             //DBConnect db = new DBConnect();
-            //db.selectAll(); //WERKT
-            //db.insert(4); //WERKT
-            //db.update(); //WERKT
-            //db.delete(); //WERKT
 
-            //Console.ReadKey();        
+            //db.insertWerknemer("3354DGDHDHTEST", "82736464TEST"); //WERKT
+            //db.deleteWerknemer("3354DGDHDHTEST"); // WERKT
+            //db.insertTaak("lol", "lol", "lolilol"); //WERKT
+            //db.deleteTaak("lol"); //WERKT
+            //db.insertLocatie("locUUID", "calUUID"); //WERKT
+            //db.deleteLocatie("locUUID"); //WERKT
+            //db.insertSessie("sesid", "bla", "bla"); //WERKT
+            //db.deleteSessie("sesid"); //WERKT
+            //db.insertEvent("evenID", "eve"); //WERKT
+            //db.deleteEvent("evenID"); //WERKT
+
+            Console.ReadKey();        
 
             ////Change this to your credentials.
             ////Check https://docs.google.com/document/d/1juDXoeJSQxVjRHMO8k0yPMVFv3-7bJfH0QSp0yeEedQ/edit?usp=sharing
