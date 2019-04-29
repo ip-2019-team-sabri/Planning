@@ -6,12 +6,12 @@ namespace IP_Planning_GoogleAPI
 {
     public class UpdateCalendar
     {
-        public UpdateCalendar(string CalendarID, string Summary, string Description, string TimeZone)
+        public UpdateCalendar(string CalendarID, string Summary, string Description)
         {
             this.CalendarID = CalendarID;
             this.Summary = Summary;
             this.Description = Description;
-            this.TimeZone = TimeZone;
+            this.TimeZone = "Europe/Brussels";
         }
         public string CalendarID { get; set; }
 

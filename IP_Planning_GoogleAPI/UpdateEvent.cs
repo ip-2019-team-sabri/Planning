@@ -6,7 +6,7 @@ namespace IP_Planning_GoogleAPI
 {
     public class UpdateEvent
     {
-        public UpdateEvent(string CalendarID, string EventID, string Summary, string Location, string Description, string TimeZone, 
+        public UpdateEvent(string CalendarID, string EventID, string Summary, string Location, string Description, 
             DateTime StartDatum, DateTime EindDatum, string SprekerNaam, string SprekerEmail)
         {
             this.CalendarID = CalendarID;
@@ -14,7 +14,7 @@ namespace IP_Planning_GoogleAPI
             this.Summary = Summary;
             this.Location = Location;
             this.Description = Description;
-            this.TimeZone = TimeZone;
+            this.TimeZone = "Europe/Brussels";
             this.StartDatum = StartDatum;
             this.EindDatum = EindDatum;
             this.SprekerNaam = SprekerNaam;

@@ -6,14 +6,14 @@ namespace IP_Planning_GoogleAPI
 {
     public class CreateEvent
     {
-        public CreateEvent(string CalendarID, string Summary, string Location, string Description, string TimeZone,
+        public CreateEvent(string CalendarID, string Summary, string Location, string Description,
            DateTime StartDatum, DateTime EindDatum, string SprekerNaam, string SprekerEmail)
         {
             this.CalendarID = CalendarID;
             this.Summary = Summary;
             this.Location = Location;
             this.Description = Description;
-            this.TimeZone = TimeZone;
+            this.TimeZone = "Europe/Brussels";
             this.StartDatum = StartDatum;
             this.EindDatum = EindDatum;
             this.SprekerNaam = SprekerNaam;
