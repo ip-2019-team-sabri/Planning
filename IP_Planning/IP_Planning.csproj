@@ -6,7 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\IP_Planning_Broker\IP_Planning_Broker.csproj" />
+    <PackageReference Include="Quodes.IP.MessageBroker" Version="1.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\IP_Planning_Database\IP_Planning_Database.csproj" />
     <ProjectReference Include="..\IP_Planning_GoogleAPI\IP_Planning_GoogleAPI.csproj" />
   </ItemGroup>

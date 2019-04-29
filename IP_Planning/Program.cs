@@ -3,6 +3,7 @@ using IP_Planning_GoogleAPI;
 using IP_Planning_Database;
 using System;
 using System.Collections.Generic;
+using MessageBroker;
 
 namespace IP_Planning
 {
@@ -10,6 +11,21 @@ namespace IP_Planning
     {
         static void Main(string[] args)
         {
+            Log log = Log.Instance;
+            log.Welcome();
+            log.ShowDebugMessages(true);
+            log.LogMessage("Hello world!", "debug");
+            log.LogMessage("Hello world!", "info");
+            log.LogMessage("Hello world!", "warning");
+            log.LogMessage("Hello world!", "error");
+
+            Connection connection = Connection.Instance;
+
+            IMessageHandler messageHandler = new MessageHandler();
+
+            connection.OpenConnection("amqFacturatie", "amqFacturatie", "10.3.56.10", "Facturatie", messageHandler);
+
+            Publisher publisher = Publisher.Instance;
             //GoogleAPI googleAPI = new GoogleAPI();
 
             //var kal = googleAPI.createCalendar("testNiewKalender"); WERKT
