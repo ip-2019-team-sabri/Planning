@@ -7,57 +7,6 @@ namespace IP_Planning_Database
 {
     public class DBConnect
     {
-        public void selectAll() //voorbeeld select all
-        {
-            string connStr = "server=localhost;user=root;database=planning;port=3306;password=maxime";
-            MySqlConnection conn = new MySqlConnection(connStr);
-            try
-            {
-                Console.WriteLine("Connecting to MySQL...");
-                conn.Open();
-
-                string sql = "SELECT id FROM test";
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
-                MySqlDataReader rdr = cmd.ExecuteReader();
-               
-                while (rdr.Read())
-                {
-                    Console.WriteLine(rdr[0]);
-                }
-
-                rdr.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-
-            conn.Close();
-            Console.WriteLine("Done.");
-        }
-
-        public void update() // voorbeeld update
-        {
-            string connStr = "server=localhost;user=root;database=planning;port=3306;password=maxime";
-            MySqlConnection conn = new MySqlConnection(connStr);
-            try
-            {
-                Console.WriteLine("Connecting to MySQL...");
-                conn.Open();
-
-                string sql = "UPDATE test SET id = 3 WHERE id = 2";
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
-                cmd.ExecuteNonQuery();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-
-            conn.Close();
-            Console.WriteLine("Done.");
-        }
-
         public void insertWerknemer(string werknemerUUID, string calendarUUID)
         {
             string connStr = "server=localhost;user=root;database=planning;port=3306;password=maxime";
@@ -67,11 +16,6 @@ namespace IP_Planning_Database
                 Console.WriteLine("Connecting to MySQL...");
                 conn.Open();
 
-                /*
-                string sql = string.Format("INSERT INTO werknemer (WerknemerUUID, CalendarUUID) VALUES (" + werknemerUUID + "," + calendarUUID + ")");
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
-                cmd.ExecuteNonQuery();
-                */
                 MySqlCommand cmd = new MySqlCommand();
 
                 cmd.Connection = conn;
@@ -336,7 +280,7 @@ namespace IP_Planning_Database
             Console.WriteLine("Done.");
         }
 
-        public static void count()
+        public static void count() //voorbeeld count
         {
             string connStr = "server=localhost;user=root;database=world;port=3306;password=******";
             MySqlConnection conn = new MySqlConnection(connStr);

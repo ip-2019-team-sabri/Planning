@@ -28,28 +28,15 @@ namespace IP_Planning
             Publisher publisher = Publisher.Instance;
             //GoogleAPI googleAPI = new GoogleAPI();
 
-            //var kal = googleAPI.createCalendar("testNiewKalender"); WERKT
-            //googleAPI.createEvent(); //WERKT
-            //googleAPI.deleteEvent("99710u3s357dfjev9eb9ah797k_20190326T180123Z"); //WERKT
-            //googleAPI.deleteCalendar("aggrpeemmreezrd@gmail.com"); WERKT
-            //googleAPI.updateEvent("dit is een upgedate description lol", "aggrpeemmreezrd@gmail.com", "btsrhr4coft927041nlucsro70"); //WERKT
-            //googleAPI.updateCalendar("dit is een upgedate description", "aggrpeemmreezrd@gmail.com"); //WERKT
-            //googleAPI.getEvents("aggrpeemmreezrd@gmail.com"); //WERKT
-            //googleAPI.getCalendars("aggrpeemmreezrd@gmail.com"); //WERKT
+            //hetzelfde om calendar te updaten maar ander object gebruiken UpdateCalendar
+            //CreateCalendar c = new CreateCalendar("summary", "desc");
+            //googleAPI.createCalendar(c);
 
+            //hetzelfde om event te updaten maar ander object gebruiken UpdateEvent
+            //CreateEvent e = new CreateEvent("jfhjehf", "summ", "loc", "desc", DateTime.Now, DateTime.Now, "jos", "jos@hotmail");
+            //googleAPI.createEvent(e);
 
             //DBConnect db = new DBConnect();
-
-            //db.insertWerknemer("3354DGDHDHTEST", "82736464TEST"); //WERKT
-            //db.deleteWerknemer("3354DGDHDHTEST"); // WERKT
-            //db.insertTaak("lol", "lol", "lolilol"); //WERKT
-            //db.deleteTaak("lol"); //WERKT
-            //db.insertLocatie("locUUID", "calUUID"); //WERKT
-            //db.deleteLocatie("locUUID"); //WERKT
-            //db.insertSessie("sesid", "bla", "bla"); //WERKT
-            //db.deleteSessie("sesid"); //WERKT
-            //db.insertEvent("evenID", "eve"); //WERKT
-            //db.deleteEvent("evenID"); //WERKT
 
             Console.ReadKey();        
 
