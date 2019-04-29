@@ -12,6 +12,14 @@ namespace IP_Planning
         {
             //GoogleAPI googleAPI = new GoogleAPI();
 
+            //hetzelfde om calendar te updaten maar ander object gebruiken UpdateCalendar
+            //CreateCalendar c = new CreateCalendar("summary", "desc", "Brussels/Belgium");
+            //googleAPI.createCalendar(c);
+
+            //hetzelfde om event te updaten maar ander object gebruiken UpdateEvent
+            //CreateEvent e = new CreateEvent("jfhjehf", "summ", "loc", "desc", "time", DateTime.Now, DateTime.Now, "jos", "jos@hotmail");
+            //googleAPI.createEvent(e);
+
             //DBConnect db = new DBConnect();
 
             Console.ReadKey();        
