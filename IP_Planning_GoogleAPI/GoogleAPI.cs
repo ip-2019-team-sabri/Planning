@@ -78,7 +78,7 @@ namespace IP_Planning_GoogleAPI
                 
             };
 
-            EventsResource.InsertRequest request = service.Events.Insert(newEvent, createEvent.calendarID);
+            EventsResource.InsertRequest request = service.Events.Insert(newEvent, createEvent.CalendarID);
             Event createdEvent = request.Execute();
             Console.WriteLine("Event created: {0}", createdEvent.HtmlLink);
             Console.Read();
@@ -118,7 +118,7 @@ namespace IP_Planning_GoogleAPI
                 ApplicationName = ApplicationName,
             });
 
-            EventsResource.GetRequest getRequest = service.Events.Get(eventToUpdate.calendarID, eventToUpdate.eventID);
+            EventsResource.GetRequest getRequest = service.Events.Get(eventToUpdate.CalendarID, eventToUpdate.EventID);
             Event updateEvent = getRequest.Execute();
             updateEvent.Summary = eventToUpdate.Summary;
             updateEvent.Location = eventToUpdate.Location;
@@ -138,7 +138,7 @@ namespace IP_Planning_GoogleAPI
                 new EventAttendee() { Email = eventToUpdate.SprekerEmail, DisplayName= eventToUpdate.SprekerNaam + " (SPREKER)" }
             };
 
-            EventsResource.UpdateRequest updateRequest = service.Events.Update(updateEvent, eventToUpdate.calendarID, eventToUpdate.eventID);
+            EventsResource.UpdateRequest updateRequest = service.Events.Update(updateEvent, eventToUpdate.CalendarID, eventToUpdate.EventID);
             Event bijgewerkt = updateRequest.Execute();
 
             return bijgewerkt;
@@ -223,14 +223,14 @@ namespace IP_Planning_GoogleAPI
                 ApplicationName = ApplicationName,
             });
 
-            CalendarsResource.GetRequest getRequest = service.Calendars.Get(updateCalendar.calendarID);
+            CalendarsResource.GetRequest getRequest = service.Calendars.Get(updateCalendar.CalendarID);
             Calendar toUpdateCalendar = getRequest.Execute();
 
             toUpdateCalendar.Summary = updateCalendar.Summary;
             toUpdateCalendar.Description = updateCalendar.Description;
             toUpdateCalendar.TimeZone = updateCalendar.TimeZone;
 
-            CalendarsResource.UpdateRequest updateRequest = service.Calendars.Update(toUpdateCalendar, updateCalendar.calendarID);
+            CalendarsResource.UpdateRequest updateRequest = service.Calendars.Update(toUpdateCalendar, updateCalendar.CalendarID);
             Calendar cal = updateRequest.Execute();
 
             return cal;
