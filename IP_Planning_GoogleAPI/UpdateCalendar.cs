@@ -6,7 +6,14 @@ namespace IP_Planning_GoogleAPI
 {
     public class UpdateCalendar
     {
-        public string calendarID { get; set; }
+        public UpdateCalendar(string CalendarID, string Summary, string Description, string TimeZone)
+        {
+            this.CalendarID = CalendarID;
+            this.Summary = Summary;
+            this.Description = Description;
+            this.TimeZone = TimeZone;
+        }
+        public string CalendarID { get; set; }
 
         public string Summary { get; set; }
 

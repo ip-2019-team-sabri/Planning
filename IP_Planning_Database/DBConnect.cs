@@ -7,7 +7,6 @@ namespace IP_Planning_Database
 {
     public class DBConnect
     {
-
         public void insertWerknemer(string werknemerUUID, string calendarUUID)
         {
             string connStr = "server=localhost;user=root;database=planning;port=3306;password=maxime";
@@ -17,11 +16,6 @@ namespace IP_Planning_Database
                 Console.WriteLine("Connecting to MySQL...");
                 conn.Open();
 
-                /*
-                string sql = string.Format("INSERT INTO werknemer (WerknemerUUID, CalendarUUID) VALUES (" + werknemerUUID + "," + calendarUUID + ")");
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
-                cmd.ExecuteNonQuery();
-                */
                 MySqlCommand cmd = new MySqlCommand();
 
                 cmd.Connection = conn;

@@ -6,9 +6,23 @@ namespace IP_Planning_GoogleAPI
 {
     public class UpdateEvent
     {
-        public string calendarID { get; set; }
+        public UpdateEvent(string CalendarID, string EventID, string Summary, string Location, string Description, string TimeZone, 
+            DateTime StartDatum, DateTime EindDatum, string SprekerNaam, string SprekerEmail)
+        {
+            this.CalendarID = CalendarID;
+            this.EventID = EventID;
+            this.Summary = Summary;
+            this.Location = Location;
+            this.Description = Description;
+            this.TimeZone = TimeZone;
+            this.StartDatum = StartDatum;
+            this.EindDatum = EindDatum;
+            this.SprekerNaam = SprekerNaam;
+            this.SprekerEmail = SprekerEmail;
+        }
+        public string CalendarID { get; set; }
 
-        public string  eventID { get; set; }
+        public string  EventID { get; set; }
 
         public string Summary { get; set; }
 

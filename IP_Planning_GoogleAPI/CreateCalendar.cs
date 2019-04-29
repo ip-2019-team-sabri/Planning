@@ -6,6 +6,12 @@ namespace IP_Planning_GoogleAPI
 {
     public class CreateCalendar
     {
+        public CreateCalendar(string Summary, string Description, string TimeZone)
+        {
+            this.Summary = Summary;
+            this.Description = Description;
+            this.TimeZone = TimeZone;
+        }
         public string Summary { get; set; }
 
         public string Description { get; set; }
